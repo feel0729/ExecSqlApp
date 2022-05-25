@@ -9,13 +9,13 @@ GUI工具包 : Swing
 java.sql.Statement.executeLargeUpdate(String sql);
 
 使用的JdbcDriver:
-oracle.jdbc.driver.OracleDriver
+oracle.jdbc.driver.OracleDriver 
 
 Reference Libraries:
-json-20220320.jar
-ojdbc8.jar
-log4j-api-2.17.0.jar
-log4j-core-2.17.0.jar
+json-20220320.jar 
+ojdbc8.jar  
+log4j-api-2.17.0.jar  
+log4j-core-2.17.0.jar 
 
 設計發想:
 專案一開始的時候只有一個環境，手動執行語法還扛的過去，但是當專案到了中後期，Dev、SIT、UAT環境，還有分備份環境，這時要手動連線到每個資料庫執行語法就太麻煩，而且一有疏忽就要做資料庫差異比對才能處理好。
