@@ -242,6 +242,8 @@ public class ExecSqlApp {
 
     if (!allFiles.isEmpty()) {
       fileList.setListData(allFileNames.split(","));
+    } else {
+      fileList.setListData(new String[0]);
     }
   }
 
