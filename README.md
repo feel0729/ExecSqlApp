@@ -5,7 +5,7 @@ execute sql script file to multiple environments.
 
 GUI工具包 : Swing
 
-執行sql的方法: 
+執行sql的方法:  
 java.sql.Statement.executeLargeUpdate(String sql);
 
 使用的JdbcDriver:  
