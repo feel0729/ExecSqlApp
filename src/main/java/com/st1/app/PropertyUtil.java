@@ -45,11 +45,6 @@ public class PropertyUtil {
     return dir == null ? "" : dir;
   }
 
-  /**
-   * Åª¨ú³]©wÀÉ
-   * 
-   * @throws IOException ...
-   */
   private static void readProperties() {
     logger.trace("PropertyUtil readProperties ...");
     init();
