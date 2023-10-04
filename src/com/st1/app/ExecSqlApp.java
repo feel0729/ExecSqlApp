@@ -27,6 +27,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import javax.swing.JCheckBox;
 
 public class ExecSqlApp {
   private static final Logger logger = LogManager.getLogger();
@@ -170,7 +171,7 @@ public class ExecSqlApp {
 
     JLabel lableTargetEnv = new JLabel("\u76EE\u6A19\u74B0\u5883");
     lableTargetEnv.setHorizontalAlignment(SwingConstants.CENTER);
-    lableTargetEnv.setBounds(389, 16, 179, 19);
+    lableTargetEnv.setBounds(389, 16, 113, 19);
     frmExecsqlapp.getContentPane().add(lableTargetEnv);
 
     JScrollPane scrollPaneTargetEnv = new JScrollPane();
@@ -229,6 +230,35 @@ public class ExecSqlApp {
       }
     });
     frmExecsqlapp.getContentPane().add(btnExec);
+
+    JCheckBox checkboxSelectAll = new JCheckBox("\u5168\u9078");
+    checkboxSelectAll.setBounds(502, 12, 66, 27);
+    checkboxSelectAll.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        logger.trace("ExecSqlApp checkboxSelectAll actionPerformed ...");
+
+        // 清除選擇
+        selectedEnv = new ArrayList<>();
+        envList.clearSelection();;
+
+        if (checkboxSelectAll.isSelected()) {
+          ListModel<String> listModel = envList.getModel();
+
+          envList.setSelectionInterval(0, listModel.getSize() - 1);
+
+          // 全選
+          for (int i = 0; i < listModel.getSize(); i++) {
+
+            String envName = listModel.getElementAt(i);
+
+            selectedEnv.add(envName);
+
+            System.out.println(envName);
+          }
+        }
+      }
+    });
+    frmExecsqlapp.getContentPane().add(checkboxSelectAll);
   }
 
   private void doSearch() {
