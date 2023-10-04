@@ -3,7 +3,7 @@ package com.st1.app;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,24 +11,13 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.swing.JCheckBox;
 
 public class ExecSqlApp {
     private static final Logger logger = LogManager.getLogger();
@@ -79,8 +68,34 @@ public class ExecSqlApp {
         initialize();
         doSearch();
         setEnvList();
+        setIcon();
     }
 
+    private void setIcon() {
+        // 標題圖示
+        String iconPath = "/sql.png";
+        InputStream inputStream = ExecSqlApp.class.getResourceAsStream(iconPath);
+        if (inputStream != null) {
+            try {
+                ImageIcon img = new ImageIcon(ImageIO.read(inputStream));
+                frmExecsqlapp.setIconImage(img.getImage());
+            } catch (IOException e) {
+                StringWriter errors = new StringWriter();
+                e.printStackTrace(new PrintWriter(errors));
+                logger.error("Failed to load icon: " + iconPath + " , Exception = " + errors.toString());
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    StringWriter errors = new StringWriter();
+                    e.printStackTrace(new PrintWriter(errors));
+                    logger.error("inputStream.close Exception = " + errors.toString());
+                }
+            }
+        } else {
+            logger.error("Couldn't find file: " + iconPath);
+        }
+    }
     private void init() {
         logger.trace("ExecSqlApp init ...");
         allFiles = new HashMap<>();

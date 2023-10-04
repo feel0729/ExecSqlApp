@@ -101,6 +101,7 @@
                             <outfile>target/ExecSqlApp.exe</outfile>
                             <jar>target/ExecSqlApp-0.0.1-SNAPSHOT.jar</jar>
                             <errTitle>ExecSqlApp Error</errTitle>
+                            <icon>./src/main/resources/sql.ico</icon>
                             <classPath>
                                 <mainClass>com.st1.app.ExecSqlApp</mainClass>
                                 <addDependencies>false</addDependencies>
