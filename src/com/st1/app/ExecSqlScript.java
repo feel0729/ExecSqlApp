@@ -285,81 +285,6 @@ public class ExecSqlScript implements Runnable {
       } else if (thisLine.toUpperCase().contains("PROCEDURE")
           || thisLine.toUpperCase().contains("FUNCTION")) {
         isDDL = true;
-      } else if (thisLine.toUpperCase().contains("DELETE")) {
-        logger.trace(fileName + " Sql語句包含 DELETE.");
-
-        int userAnswer = JOptionPane.showConfirmDialog(ExecSqlApp.frmExecsqlapp,
-            fileName + " 的SQL語句包含 DELETE 請確認是否繼續執行", "刪除確認", JOptionPane.YES_NO_OPTION);
-
-        if (userAnswer == JOptionPane.YES_OPTION) {
-          // 繼續
-          logger.info("使用者選擇繼續.");
-        } else {
-          // 不繼續
-          userChoice = false;
-          logger.info("使用者選擇不繼續.");
-          everyLineInFile = new ArrayList<>(); // 清空資料
-          Map<String, String> execResult = new HashMap<>();
-          execResult.put("fileName", fileName);
-          execResult.put("targetEnv", "");
-          execResult.put("isOK", "");
-          execResult.put("userChoice", userChoice ? "" : "不繼續");
-          execResult.put("appStartTime", appStartTime);
-          execResult.put("startTime", "");
-          execResult.put("endTime", "");
-          execResultList.add(execResult);
-          break;
-        }
-      } else if (thisLine.toUpperCase().contains("DROP")) {
-        logger.trace(fileName + " Sql語句包含 DROP.");
-
-        int userAnswer = JOptionPane.showConfirmDialog(ExecSqlApp.frmExecsqlapp,
-            fileName + " 的SQL語句包含  DROP 請確認是否繼續執行", "刪除確認", JOptionPane.YES_NO_OPTION);
-
-        if (userAnswer == JOptionPane.YES_OPTION) {
-          // 繼續
-          logger.info("使用者選擇繼續.");
-        } else {
-          // 不繼續
-          userChoice = false;
-          logger.info("使用者選擇不繼續.");
-          everyLineInFile = new ArrayList<>(); // 清空資料
-          Map<String, String> execResult = new HashMap<>();
-          execResult.put("fileName", fileName);
-          execResult.put("targetEnv", "");
-          execResult.put("isOK", "");
-          execResult.put("userChoice", userChoice ? "" : "不繼續");
-          execResult.put("appStartTime", appStartTime);
-          execResult.put("startTime", "");
-          execResult.put("endTime", "");
-          execResultList.add(execResult);
-          break;
-        }
-      } else if (thisLine.toUpperCase().contains("TRUNCATE")) {
-        logger.trace(fileName + " Sql語句包含 TRUNCATE.");
-
-        int userAnswer = JOptionPane.showConfirmDialog(ExecSqlApp.frmExecsqlapp,
-            fileName + " 的SQL語句包含  TRUNCATE 請確認是否繼續執行", "刪除確認", JOptionPane.YES_NO_OPTION);
-
-        if (userAnswer == JOptionPane.YES_OPTION) {
-          // 繼續
-          logger.info("使用者選擇繼續.");
-        } else {
-          // 不繼續
-          userChoice = false;
-          logger.info("使用者選擇不繼續.");
-          everyLineInFile = new ArrayList<>(); // 清空資料
-          Map<String, String> execResult = new HashMap<>();
-          execResult.put("fileName", fileName);
-          execResult.put("targetEnv", "");
-          execResult.put("isOK", "");
-          execResult.put("userChoice", userChoice ? "" : "不繼續");
-          execResult.put("appStartTime", appStartTime);
-          execResult.put("startTime", "");
-          execResult.put("endTime", "");
-          execResultList.add(execResult);
-          break;
-        }
       }
       everyLineInFile.add(thisLine);
     }
@@ -385,11 +310,16 @@ public class ExecSqlScript implements Runnable {
           logger.info("skip this line : " + tmpLine);
           continue;
         }
-        // 抓這兩種CASE當第一行
-        // CREATE ... PROCEDURE
-        // CREATE ... FUNCTION
-        if (tmpLine.toUpperCase().contains("CREATE") && (tmpLine.toUpperCase().contains("PROCEDURE")
+        if (tmpLine.toUpperCase().contains("DROP") && (tmpLine.toUpperCase().contains("PROCEDURE")
             || tmpLine.toUpperCase().contains("FUNCTION"))) {
+          // drop 先送一行
+          result.add(tmpLine);
+        } else if (tmpLine.toUpperCase().contains("CREATE")
+            && (tmpLine.toUpperCase().contains("PROCEDURE")
+                || tmpLine.toUpperCase().contains("FUNCTION"))) {
+          // 抓這兩種CASE當第一行
+          // CREATE ... PROCEDURE
+          // CREATE ... FUNCTION
           line += tmpLine;
           line += "-- create by ExecSqlApp at " + appStartTime + " \n";
           isSkip = false;
