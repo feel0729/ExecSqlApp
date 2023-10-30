@@ -1,6 +1,8 @@
 # ExecSqlApp
 execute sql script file to multiple environments.
 
+[![Java CI with Maven](https://github.com/feel0729/ExecSqlApp/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/feel0729/ExecSqlApp/actions/workflows/maven.yml)
+
 ![image](https://github.com/feel0729/ExecSqlApp/blob/main/view.JPG)
 
 GUI工具包 : Swing
