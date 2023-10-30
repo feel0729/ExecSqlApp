@@ -11,14 +11,14 @@
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="1"
 					modulate="true" />
-				<SizeBasedTriggeringPolicy size="1 MB" />
+				<SizeBasedTriggeringPolicy size="100 MB" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
 			<DefaultRolloverStrategy max="30" />
 		</RollingRandomAccessFile>
 	</Appenders>
 	<Loggers>
-		<Root level="all">
+		<Root level="INFO">
 			<AppenderRef ref="MyLog" />
 		</Root>
 	</Loggers>
