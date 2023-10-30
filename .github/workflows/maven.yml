@@ -38,7 +38,7 @@ jobs:
       - name: Push new tag
         if: success()
         run: |
-          NEW_TAG=$(date +'%Y-%m-%d_%H-%M-%S')
+          NEW_TAG=$(TZ="Asia/Taipei" date +'%Y-%m-%d_%H-%M-%S')
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag "$NEW_TAG"
