@@ -209,7 +209,6 @@ public class ExecSqlApp {
 
                 btnExec.setEnabled(false);
 
-                // ����
                 doExec();
             }
         });
