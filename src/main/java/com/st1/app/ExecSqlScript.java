@@ -198,6 +198,7 @@ public class ExecSqlScript implements Runnable {
             String startTime = timeFormat.format(new Date());
             try {
                 statment = tmpConnection.createStatement();
+                statment.execute("SET DEFINE OFF");
             } catch (SQLException e) {
                 logger.error("ExecSqlScript execSql dbConnection createStatement error = " + e.getMessage());
             }
