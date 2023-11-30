@@ -23,7 +23,7 @@ public class ExecSqlScript implements Runnable {
 
     private Map<String, String> sqlScriptFiles;
 
-    private Statement statment;
+    private Statement statement;
 
     private String appStartDate;
     private String appStartTime;
@@ -42,7 +42,7 @@ public class ExecSqlScript implements Runnable {
         dbProperties = properties;
         envList = selectedEnv;
         sqlScriptFiles = selectedFiles;
-        statment = null;
+        statement = null;
     }
 
     private void init() {
@@ -184,14 +184,15 @@ public class ExecSqlScript implements Runnable {
             }
             String startTime = timeFormat.format(new Date());
             try {
-                statment = tmpConnection.createStatement();
+                statement = tmpConnection.createStatement();
+                statement.setEscapeProcessing(false);
             } catch (SQLException e) {
                 logger.error("ExecSqlScript execSql dbConnection createStatement error = " + e.getMessage());
             }
             String endTime = timeFormat.format(new Date());
             logger.info("ExecSqlScript execSql targetEnv = " + targetEnv);
             try {
-                statment.executeLargeUpdate(sql);
+                statement.executeLargeUpdate(sql);
             } catch (SQLException e) {
                 logger.error("ExecSqlScript execSql statment executeLargeUpdate error = " + e.getMessage());
                 logger.error("ExecSqlScript execSql error sql = \n" + sql);
@@ -216,9 +217,9 @@ public class ExecSqlScript implements Runnable {
                 errorData.put(errorKey, errorList);
                 isOK = false;
             }
-            if (statment != null) {
+            if (statement != null) {
                 try {
-                    statment.close();
+                    statement.close();
                 } catch (SQLException e) {
                     logger.error("ExecSqlScript execSql statment close error = " + e.getMessage());
                 }
