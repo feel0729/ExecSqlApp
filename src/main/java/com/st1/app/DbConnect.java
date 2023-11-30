@@ -20,6 +20,7 @@ public class DbConnect {
     private static String user;
     private static String password;
     private static String timeout;
+    private static String sidFlag;
 
     public static Connection getConnection() {
         logger.trace("DbConnect getConnection ...");
@@ -29,7 +30,12 @@ public class DbConnect {
         } catch (ClassNotFoundException e) {
             logger.error("DbConnect Class.forName error = " + e.getMessage());
         } // register OracleDriver class
-        String url = "jdbc:oracle:thin:@" + ip + ":" + port + ":" + sid;
+        String url = "";
+        if (sidFlag.equals("1")) {
+            url = "jdbc:oracle:thin:@//" + ip + ":" + port + "/" + sid;
+        } else {
+            url = "jdbc:oracle:thin:@" + ip + ":" + port + ":" + sid;
+        }
         try {
             return DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
@@ -83,6 +89,7 @@ public class DbConnect {
         user = dbProperty.get("user");
         password = dbProperty.get("password");
         timeout = dbProperty.get("timeout");
+        sidFlag = dbProperty.get("sidFlag");
     }
 
     public static String getTimeout() {
