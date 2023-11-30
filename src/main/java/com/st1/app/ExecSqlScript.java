@@ -194,7 +194,6 @@ public class ExecSqlScript implements Runnable {
             } catch (SQLException e) {
                 logger.error("ExecSqlScript execSql tmpConnection setAutoCommit error = " + e.getMessage());
             }
-            // ��������ɶ�
             String startTime = timeFormat.format(new Date());
             try {
                 statment = tmpConnection.createStatement();
