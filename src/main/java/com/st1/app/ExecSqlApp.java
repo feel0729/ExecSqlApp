@@ -142,6 +142,7 @@ public class ExecSqlApp {
         textfieldDir = new JTextField();
         textfieldDir.setBounds(14, 13, 240, 25);
         textfieldDir.setText(dir);
+        doSearch();
         frmExecsqlapp.getContentPane().add(textfieldDir);
         textfieldDir.setColumns(10);
 
@@ -198,17 +199,14 @@ public class ExecSqlApp {
             public void actionPerformed(ActionEvent e) {
                 logger.trace("ExecSqlApp btnExec actionPerformed ...");
                 if (selectedFiles == null || selectedFiles.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "�S���w��ܪ�sql�ɮ�", "����", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "未選擇欲執行的sql", "錯誤", JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }
-
                 if (selectedEnv == null || selectedEnv.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "�S���w��ܪ��ؼ�����", "����", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "未選擇目標資料庫", "錯誤", JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }
-
                 btnExec.setEnabled(false);
-
                 doExec();
             }
         });
@@ -219,24 +217,14 @@ public class ExecSqlApp {
         checkboxSelectAll.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 logger.trace("ExecSqlApp checkboxSelectAll actionPerformed ...");
-
-                // �M�����
                 selectedEnv = new ArrayList<>();
                 envList.clearSelection();
-                ;
-
                 if (checkboxSelectAll.isSelected()) {
                     ListModel<String> listModel = envList.getModel();
-
                     envList.setSelectionInterval(0, listModel.getSize() - 1);
-
-                    // ����
                     for (int i = 0; i < listModel.getSize(); i++) {
-
                         String envName = listModel.getElementAt(i);
-
                         selectedEnv.add(envName);
-
                         System.out.println(envName);
                     }
                 }
@@ -247,13 +235,9 @@ public class ExecSqlApp {
 
     private void doSearch() {
         logger.info("ExecSqlApp doSearch ...");
-
         SearchUtil.listDir(dir);
-
         allFiles = SearchUtil.getAllFiles();
-
         allFileNames = SearchUtil.getAllFileNames();
-
         if (!allFiles.isEmpty()) {
             fileList.setListData(allFileNames.split(","));
         } else {
@@ -277,13 +261,8 @@ public class ExecSqlApp {
 
     private void doExec() {
         logger.info("ExecSqlApp doExec ...");
-        // ����Sql��w�諸�U������
-
-        // ��ڰ���Sql
         execSqlScript = new ExecSqlScript(properties, selectedEnv, selectedFiles);
-
         fixedThreadPool = Executors.newFixedThreadPool(1);
-
         fixedThreadPool.submit(execSqlScript);
     }
 }

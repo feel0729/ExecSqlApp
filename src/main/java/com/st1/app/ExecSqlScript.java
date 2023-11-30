@@ -1,28 +1,18 @@
 package com.st1.app;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-
-import javax.swing.JOptionPane;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ExecSqlScript implements Runnable {
     private static final Logger logger = LogManager.getLogger();
@@ -197,7 +187,6 @@ public class ExecSqlScript implements Runnable {
             String startTime = timeFormat.format(new Date());
             try {
                 statment = tmpConnection.createStatement();
-                statment.execute("SET DEFINE OFF");
             } catch (SQLException e) {
                 logger.error("ExecSqlScript execSql dbConnection createStatement error = " + e.getMessage());
             }
@@ -318,7 +307,6 @@ public class ExecSqlScript implements Runnable {
                 line += tmpLine;
             }
         }
-        // ����̫�@��;
         line = line.substring(0, line.lastIndexOf(";") + 1);
         result.add(line);
         return result;
