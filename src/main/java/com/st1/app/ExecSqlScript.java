@@ -35,8 +35,6 @@ public class ExecSqlScript implements Runnable {
 
     private List<Map<String, String>> execResultList;
 
-    private Map<String, String> record;
-
     private Map<Map<String, String>, List<String>> errorData;
     private Map<String, String> errorKey;
 
@@ -61,10 +59,6 @@ public class ExecSqlScript implements Runnable {
 
         logger.trace("ExecSqlScript init appStartTime = " + appStartTime);
 
-        record = RecordUtil.getRecord();
-
-        logger.trace("ExecSqlScript init record.size = " + record.size());
-
         if (dbProperties == null || dbProperties.isEmpty()) {
             logger.error("ExecSqlScript run dbProperties is null.");
             return;
@@ -84,7 +78,7 @@ public class ExecSqlScript implements Runnable {
         logger.trace("ExecSqlScript run ...");
 
         init();
-
+        boolean isOK = true;
         for (Map.Entry<String, String> entry : sqlScriptFiles.entrySet()) {
             userChoice = true;
             String fileName = entry.getKey();
@@ -104,12 +98,17 @@ public class ExecSqlScript implements Runnable {
                 logger.trace("ExecSqlScript run sqlList is null. fileName = " + fileName);
             } else {
                 for (String sql : sqlList) {
-                    execSql(isTfUsp, fileName, sql);
+                    isOK = execSql(isTfUsp, fileName, sql);
+                    if (!isOK) {
+                        break;
+                    }
                 }
+            }
+            if (!isOK) {
+                break;
             }
         }
 
-        // ��X���G
         if (execResultList != null && !execResultList.isEmpty()) {
             for (Map<String, String> execResult : execResultList) {
                 logger.info("================================================");
@@ -122,8 +121,6 @@ public class ExecSqlScript implements Runnable {
                 logger.info("endTime      = " + execResult.get("endTime"));
             }
         }
-
-        RecordUtil.saveRecord(record);
 
         boolean isError = errorData != null && !errorData.isEmpty();
 
@@ -162,7 +159,8 @@ public class ExecSqlScript implements Runnable {
         ExecSqlApp.btnExec.setEnabled(true);
     }
 
-    private void execSql(boolean isTfUsp, String fileName, String sql) {
+    private boolean execSql(boolean isTfUsp, String fileName, String sql) {
+        boolean isOK = true;
         for (String targetEnv : envList) {
             if (isTfUsp && !targetEnv.toUpperCase().startsWith("TF")) {
                 continue;
@@ -192,12 +190,19 @@ public class ExecSqlScript implements Runnable {
             }
             String endTime = timeFormat.format(new Date());
             logger.info("ExecSqlScript execSql targetEnv = " + targetEnv);
-            boolean isOK = true;
             try {
                 statment.executeLargeUpdate(sql);
             } catch (SQLException e) {
                 logger.error("ExecSqlScript execSql statment executeLargeUpdate error = " + e.getMessage());
                 logger.error("ExecSqlScript execSql error sql = \n" + sql);
+                JOptionPane.showMessageDialog(null
+                        , "執行錯誤("
+                                + e.getMessage()
+                                + "),sql:"
+                                + sql
+                        , "錯誤"
+                        , JOptionPane.ERROR_MESSAGE
+                );
                 errorKey = new HashMap<>();
                 errorKey.put("targetEnv", targetEnv);
                 errorKey.put("fileName", fileName);
@@ -220,10 +225,6 @@ public class ExecSqlScript implements Runnable {
             }
             Map<String, String> execResult = new HashMap<>();
             execResult.put("fileName", fileName);
-            if (isOK) {
-                logger.trace("ExecSqlScript execSql ok !");
-                record.put(fileName, appStartDate);
-            }
             execResult.put("targetEnv", targetEnv);
             execResult.put("isOK", isOK ? "OK" : "");
             execResult.put("userChoice", userChoice ? "" : "don't continue");
@@ -241,7 +242,11 @@ public class ExecSqlScript implements Runnable {
             } catch (SQLException e) {
                 logger.error("ExecSqlScript execSql tmpConnection close error = " + e.getMessage());
             }
+            if (!isOK) {
+                break;
+            }
         }
+        return isOK;
     }
 
     private List<String> getSqlScript(String filePath) throws IOException {
