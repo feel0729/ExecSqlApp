@@ -97,11 +97,9 @@ public class ExecSqlScript implements Runnable {
             if (sqlList == null || sqlList.isEmpty()) {
                 logger.trace("ExecSqlScript run sqlList is null. fileName = " + fileName);
             } else {
-                for (String sql : sqlList) {
-                    isOK = execSql(isTfUsp, fileName, sql);
-                    if (!isOK) {
-                        break;
-                    }
+                isOK = execSql(isTfUsp, fileName, sqlList);
+                if (!isOK) {
+                    break;
                 }
             }
             if (!isOK) {
@@ -159,7 +157,7 @@ public class ExecSqlScript implements Runnable {
         ExecSqlApp.btnExec.setEnabled(true);
     }
 
-    private boolean execSql(boolean isTfUsp, String fileName, String sql) {
+    private boolean execSql(boolean isTfUsp, String fileName, List<String> sqlList) {
         boolean isOK = true;
         for (String targetEnv : envList) {
             if (isTfUsp && !targetEnv.toUpperCase().startsWith("TF")) {
@@ -191,31 +189,33 @@ public class ExecSqlScript implements Runnable {
             }
             String endTime = timeFormat.format(new Date());
             logger.info("ExecSqlScript execSql targetEnv = " + targetEnv);
-            try {
-                statement.executeLargeUpdate(sql);
-            } catch (SQLException e) {
-                logger.error("ExecSqlScript execSql statment executeLargeUpdate error = " + e.getMessage());
-                logger.error("ExecSqlScript execSql error sql = \n" + sql);
-                JOptionPane.showMessageDialog(null
-                        , "執行錯誤("
-                                + e.getMessage()
-                                + "),sql:"
-                                + sql
-                        , "錯誤"
-                        , JOptionPane.ERROR_MESSAGE
-                );
-                errorKey = new HashMap<>();
-                errorKey.put("targetEnv", targetEnv);
-                errorKey.put("fileName", fileName);
-                List<String> errorList;
-                if (errorData.containsKey(errorKey)) {
-                    errorList = errorData.get(errorKey);
-                } else {
-                    errorList = new ArrayList<>();
+            for (String sql : sqlList) {
+                try {
+                    statement.executeLargeUpdate(sql);
+                } catch (SQLException e) {
+                    logger.error("ExecSqlScript execSql statment executeLargeUpdate error = " + e.getMessage());
+                    logger.error("ExecSqlScript execSql error sql = \n" + sql);
+                    JOptionPane.showMessageDialog(null
+                            , "執行錯誤("
+                                    + e.getMessage()
+                                    + "),sql:"
+                                    + sql
+                            , "錯誤"
+                            , JOptionPane.ERROR_MESSAGE
+                    );
+                    errorKey = new HashMap<>();
+                    errorKey.put("targetEnv", targetEnv);
+                    errorKey.put("fileName", fileName);
+                    List<String> errorList;
+                    if (errorData.containsKey(errorKey)) {
+                        errorList = errorData.get(errorKey);
+                    } else {
+                        errorList = new ArrayList<>();
+                    }
+                    errorList.add(e.getMessage());
+                    errorData.put(errorKey, errorList);
+                    isOK = false;
                 }
-                errorList.add(e.getMessage());
-                errorData.put(errorKey, errorList);
-                isOK = false;
             }
             if (statement != null) {
                 try {
