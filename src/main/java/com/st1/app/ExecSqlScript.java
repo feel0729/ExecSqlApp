@@ -11,8 +11,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class ExecSqlScript implements Runnable {
     private static final Logger logger = LogManager.getLogger();
@@ -31,13 +33,6 @@ public class ExecSqlScript implements Runnable {
     private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     private final DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private boolean userChoice = true;
-
-    private List<Map<String, String>> execResultList;
-
-    private Map<Map<String, String>, List<String>> errorData;
-    private Map<String, String> errorKey;
-
     public ExecSqlScript(List<Map<String, String>> properties, List<String> selectedEnv, Map<String, String> selectedFiles) {
         dbProperties = properties;
         envList = selectedEnv;
@@ -46,44 +41,36 @@ public class ExecSqlScript implements Runnable {
     }
 
     private void init() {
-        logger.trace("ExecSqlScript init ...");
-
-        execResultList = new ArrayList<>();
-
-        errorData = new HashMap<>();
-
+        logger.trace("init ...");
         Date appStart = new Date();
-
         appStartDate = dateFormat.format(appStart);
         appStartTime = timeFormat.format(appStart);
 
-        logger.trace("ExecSqlScript init appStartTime = " + appStartTime);
+        logger.trace("appStartTime = " + appStartTime);
 
         if (dbProperties == null || dbProperties.isEmpty()) {
-            logger.error("ExecSqlScript run dbProperties is null.");
+            logger.error("dbProperties is null.");
             return;
         }
         if (envList == null || envList.isEmpty()) {
-            logger.error("ExecSqlScript run envList is null.");
+            logger.error("envList is null.");
             return;
         }
         if (sqlScriptFiles == null || sqlScriptFiles.isEmpty()) {
-            logger.error("ExecSqlScript run sqlScriptFiles is null.");
+            logger.error("sqlScriptFiles is null.");
             return;
         }
     }
 
     @Override
     public void run() {
-        logger.trace("ExecSqlScript run ...");
-
+        logger.trace("run ...");
         init();
         boolean isOK = true;
         for (Map.Entry<String, String> entry : sqlScriptFiles.entrySet()) {
-            userChoice = true;
             String fileName = entry.getKey();
             String filePath = entry.getValue();
-            logger.trace("ExecSqlScript run fileName = " + fileName);
+            logger.trace("fileName = " + fileName);
             boolean isTfUsp = false;
             if (fileName.toUpperCase().startsWith("USP_TF_")) {
                 isTfUsp = true;
@@ -92,68 +79,23 @@ public class ExecSqlScript implements Runnable {
             try {
                 sqlList = getSqlScript(filePath);
             } catch (IOException e) {
-                logger.error("ExecSqlScript run getSqlScript error = " + e.getMessage());
+                logger.error("getSqlScript error = " + e.getMessage());
             }
             if (sqlList == null || sqlList.isEmpty()) {
-                logger.trace("ExecSqlScript run sqlList is null. fileName = " + fileName);
+                logger.trace("sqlList is null. fileName = " + fileName);
             } else {
                 isOK = execSql(isTfUsp, fileName, sqlList);
                 if (!isOK) {
                     break;
                 }
             }
-            if (!isOK) {
-                break;
-            }
+            logger.trace("fileName {} ok", fileName);
         }
-
-        if (execResultList != null && !execResultList.isEmpty()) {
-            for (Map<String, String> execResult : execResultList) {
-                logger.info("================================================");
-                logger.info("fileName     = " + execResult.get("fileName"));
-                logger.info("targetEnv    = " + execResult.get("targetEnv"));
-                logger.info("isOK         = " + execResult.get("isOK"));
-                logger.info("userChoice   = " + execResult.get("userChoice"));
-                logger.info("appStartTime = " + execResult.get("appStartTime"));
-                logger.info("startTime    = " + execResult.get("startTime"));
-                logger.info("endTime      = " + execResult.get("endTime"));
-            }
-        }
-
-        boolean isError = errorData != null && !errorData.isEmpty();
-
-        JOptionPane.showMessageDialog(null, "執行完畢" + (isError ? ",但有錯誤" : ""), "提示",
+        JOptionPane.showMessageDialog(
+                null,
+                "執行完畢",
+                "提示",
                 JOptionPane.INFORMATION_MESSAGE);
-
-        if (isError) {
-            String allErrorMessage = "";
-            Map<String, String> tempErrorKey;
-            List<String> errorMessageList;
-            String tempTargetEnv;
-            String tempFileName;
-            int errorCount = 0;
-            for (Entry<Map<String, String>, List<String>> entry : errorData.entrySet()) {
-                tempErrorKey = entry.getKey();
-                errorMessageList = entry.getValue();
-                tempTargetEnv = tempErrorKey.get("targetEnv");
-                tempFileName = tempErrorKey.get("fileName");
-                allErrorMessage += "環境 : " + tempTargetEnv + "\r\n執行 : " + tempFileName + " 時，發生錯誤\r\n";
-                for (String errorMessage : errorMessageList) {
-                    if (errorCount >= 10) {
-                        allErrorMessage += "錯誤太多,未全部顯示在此視窗,請至log查看完整錯誤說明";
-                        break;
-                    }
-                    allErrorMessage += errorMessage + "\r\n";
-                    errorCount++;
-                }
-                if (errorCount >= 10) {
-                    break;
-                }
-            }
-            logger.error(allErrorMessage);
-            JOptionPane.showMessageDialog(null, allErrorMessage, "執行錯誤", JOptionPane.ERROR_MESSAGE);
-        }
-
         ExecSqlApp.btnExec.setEnabled(true);
     }
 
@@ -172,79 +114,55 @@ public class ExecSqlScript implements Runnable {
                 }
             }
             if (tmpConnection == null) {
-                logger.error("ExecSqlScript execSql tmpConnection is null.");
+                logger.error("tmpConnection is null.");
                 continue;
             }
             try {
                 tmpConnection.setAutoCommit(false);
             } catch (SQLException e) {
-                logger.error("ExecSqlScript execSql tmpConnection setAutoCommit error = " + e.getMessage());
+                logger.error("tmpConnection setAutoCommit error = " + e.getMessage());
             }
             String startTime = timeFormat.format(new Date());
             try {
                 statement = tmpConnection.createStatement();
                 statement.setEscapeProcessing(false);
             } catch (SQLException e) {
-                logger.error("ExecSqlScript execSql dbConnection createStatement error = " + e.getMessage());
+                logger.error("createStatement error = " + e.getMessage());
             }
             String endTime = timeFormat.format(new Date());
-            logger.info("ExecSqlScript execSql targetEnv = " + targetEnv);
-            String thisSql = "";
+            logger.info("execSql targetEnv = " + targetEnv);
             try {
+                int cnt = 0;
+                logger.info("executeLargeUpdate sqlList size = {} ", sqlList.size());
                 for (String sql : sqlList) {
-                    thisSql = sql;
-                    statement.addBatch(sql);
+                    statement.executeLargeUpdate(sql);
+                    cnt++;
+                    if (cnt % 100 == 0 || cnt == sqlList.size()) {
+                        logger.info("cnt = {}", cnt);
+                        doCommit(tmpConnection);
+                    }
                 }
-                statement.executeBatch();
+                logger.info("executeLargeUpdate sqlList ok");
             } catch (SQLException e) {
-                logger.error("ExecSqlScript execSql statment executeLargeUpdate error = " + e.getMessage());
-                logger.error("ExecSqlScript execSql error sql = \n" + thisSql);
+                logger.error("executeLargeUpdate error = " + e.getMessage());
                 JOptionPane.showMessageDialog(null
-                        , "執行錯誤("
-                                + e.getMessage()
-                                + "),sql:"
-                                + thisSql
+                        , "執行錯誤(" + e.getMessage() + ")"
                         , "錯誤"
                         , JOptionPane.ERROR_MESSAGE
                 );
-                errorKey = new HashMap<>();
-                errorKey.put("targetEnv", targetEnv);
-                errorKey.put("fileName", fileName);
-                List<String> errorList;
-                if (errorData.containsKey(errorKey)) {
-                    errorList = errorData.get(errorKey);
-                } else {
-                    errorList = new ArrayList<>();
-                }
-                errorList.add(e.getMessage());
-                errorData.put(errorKey, errorList);
                 isOK = false;
             }
             if (statement != null) {
                 try {
                     statement.close();
                 } catch (SQLException e) {
-                    logger.error("ExecSqlScript execSql statment close error = " + e.getMessage());
+                    logger.error("statment close error = " + e.getMessage());
                 }
-            }
-            Map<String, String> execResult = new HashMap<>();
-            execResult.put("fileName", fileName);
-            execResult.put("targetEnv", targetEnv);
-            execResult.put("isOK", isOK ? "OK" : "");
-            execResult.put("userChoice", userChoice ? "" : "don't continue");
-            execResult.put("appStartTime", appStartTime);
-            execResult.put("startTime", startTime);
-            execResult.put("endTime", endTime);
-            execResultList.add(execResult);
-            try {
-                tmpConnection.commit();
-            } catch (SQLException e) {
-                logger.error("ExecSqlScript execSql tmpConnection commit error = " + e.getMessage());
             }
             try {
                 tmpConnection.close();
             } catch (SQLException e) {
-                logger.error("ExecSqlScript execSql tmpConnection close error = " + e.getMessage());
+                logger.error("tmpConnection close error = " + e.getMessage());
             }
             if (!isOK) {
                 break;
@@ -253,15 +171,20 @@ public class ExecSqlScript implements Runnable {
         return isOK;
     }
 
+    private void doCommit(Connection tmpConnection) throws SQLException {
+        tmpConnection.commit();
+        logger.info("doCommit ok ");
+    }
+
     private List<String> getSqlScript(String filePath) throws IOException {
-        logger.trace("ExecSqlScript getSqlScript filePath = " + filePath);
+        logger.trace("getSqlScript filePath = " + filePath);
         File sqlFile = new File(filePath);
 
         String fileName = sqlFile.getName();
-        logger.info("ExecSqlScript getSqlScript fileName = " + fileName);
+        logger.info("fileName = " + fileName);
 
         String fileDate = dateFormat.format(new Date(sqlFile.lastModified()));
-        logger.info("ExecSqlScript getSqlScript fileDate = " + fileDate);
+        logger.info("fileDate = " + fileDate);
 
         FileInputStream fis = new FileInputStream(sqlFile);
         InputStreamReader isw = new InputStreamReader(fis, StandardCharsets.UTF_8);
@@ -282,7 +205,7 @@ public class ExecSqlScript implements Runnable {
         if (everyLineInFile == null || everyLineInFile.isEmpty()) {
             return everyLineInFile;
         }
-        logger.trace("ExecSqlScript getSqlScript isDDL = " + isDDL);
+        logger.trace("getSqlScript isDDL = " + isDDL);
         if (isDDL) {
             return getSqlScriptIsDDL(everyLineInFile);
         }
