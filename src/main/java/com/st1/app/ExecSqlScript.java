@@ -189,33 +189,36 @@ public class ExecSqlScript implements Runnable {
             }
             String endTime = timeFormat.format(new Date());
             logger.info("ExecSqlScript execSql targetEnv = " + targetEnv);
-            for (String sql : sqlList) {
-                try {
-                    statement.executeLargeUpdate(sql);
-                } catch (SQLException e) {
-                    logger.error("ExecSqlScript execSql statment executeLargeUpdate error = " + e.getMessage());
-                    logger.error("ExecSqlScript execSql error sql = \n" + sql);
-                    JOptionPane.showMessageDialog(null
-                            , "執行錯誤("
-                                    + e.getMessage()
-                                    + "),sql:"
-                                    + sql
-                            , "錯誤"
-                            , JOptionPane.ERROR_MESSAGE
-                    );
-                    errorKey = new HashMap<>();
-                    errorKey.put("targetEnv", targetEnv);
-                    errorKey.put("fileName", fileName);
-                    List<String> errorList;
-                    if (errorData.containsKey(errorKey)) {
-                        errorList = errorData.get(errorKey);
-                    } else {
-                        errorList = new ArrayList<>();
-                    }
-                    errorList.add(e.getMessage());
-                    errorData.put(errorKey, errorList);
-                    isOK = false;
+            String thisSql = "";
+            try {
+                for (String sql : sqlList) {
+                    thisSql = sql;
+                    statement.addBatch(sql);
                 }
+                statement.executeBatch();
+            } catch (SQLException e) {
+                logger.error("ExecSqlScript execSql statment executeLargeUpdate error = " + e.getMessage());
+                logger.error("ExecSqlScript execSql error sql = \n" + thisSql);
+                JOptionPane.showMessageDialog(null
+                        , "執行錯誤("
+                                + e.getMessage()
+                                + "),sql:"
+                                + thisSql
+                        , "錯誤"
+                        , JOptionPane.ERROR_MESSAGE
+                );
+                errorKey = new HashMap<>();
+                errorKey.put("targetEnv", targetEnv);
+                errorKey.put("fileName", fileName);
+                List<String> errorList;
+                if (errorData.containsKey(errorKey)) {
+                    errorList = errorData.get(errorKey);
+                } else {
+                    errorList = new ArrayList<>();
+                }
+                errorList.add(e.getMessage());
+                errorData.put(errorKey, errorList);
+                isOK = false;
             }
             if (statement != null) {
                 try {
