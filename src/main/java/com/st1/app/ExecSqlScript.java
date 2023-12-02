@@ -86,7 +86,7 @@ public class ExecSqlScript implements Runnable {
             } else {
                 isOK = execSql(isTfUsp, fileName, sqlList);
                 if (!isOK) {
-                    break;
+                    continue;
                 }
             }
             logger.trace("fileName {} ok", fileName);
@@ -131,27 +131,27 @@ public class ExecSqlScript implements Runnable {
             }
             String endTime = timeFormat.format(new Date());
             logger.info("execSql targetEnv = " + targetEnv);
-            try {
-                int cnt = 0;
-                logger.info("executeLargeUpdate sqlList size = {} ", sqlList.size());
-                for (String sql : sqlList) {
+            int cnt = 0;
+            logger.info("executeLargeUpdate sqlList size = {} ", sqlList.size());
+            for (String sql : sqlList) {
+                try {
                     statement.executeLargeUpdate(sql);
                     cnt++;
-                    if (cnt % 100 == 0 || cnt == sqlList.size()) {
-                        logger.info("cnt = {}", cnt);
+                } catch (SQLException e) {
+                    logger.error("error = " + e.getMessage());
+                    logger.error("error sql = " + sql);
+                    isOK = false;
+                }
+                if (cnt % 100 == 0 || cnt == sqlList.size()) {
+                    logger.info("cnt = {}", cnt);
+                    try {
                         doCommit(tmpConnection);
+                    } catch (SQLException e) {
+                        logger.error("doCommit error = " + e.getMessage());
                     }
                 }
-                logger.info("executeLargeUpdate sqlList ok");
-            } catch (SQLException e) {
-                logger.error("executeLargeUpdate error = " + e.getMessage());
-                JOptionPane.showMessageDialog(null
-                        , "執行錯誤(" + e.getMessage() + ")"
-                        , "錯誤"
-                        , JOptionPane.ERROR_MESSAGE
-                );
-                isOK = false;
             }
+            logger.info("executeLargeUpdate sqlList ok");
             if (statement != null) {
                 try {
                     statement.close();
@@ -163,9 +163,6 @@ public class ExecSqlScript implements Runnable {
                 tmpConnection.close();
             } catch (SQLException e) {
                 logger.error("tmpConnection close error = " + e.getMessage());
-            }
-            if (!isOK) {
-                break;
             }
         }
         return isOK;
