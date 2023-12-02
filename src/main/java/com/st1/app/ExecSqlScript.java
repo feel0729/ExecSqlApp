@@ -206,7 +206,7 @@ public class ExecSqlScript implements Runnable {
         if (isDDL) {
             return getSqlScriptIsDDL(everyLineInFile);
         }
-        return getSqlScriptNotDDL(everyLineInFile, fileName, fileDate);
+        return getSqlScriptNotDDL(everyLineInFile);
     }
 
     private List<String> getSqlScriptIsDDL(List<String> everyLineInFile) {
@@ -241,20 +241,28 @@ public class ExecSqlScript implements Runnable {
         return result;
     }
 
-    private List<String> getSqlScriptNotDDL(List<String> everyLineInFile, String fileName, String fileDate) {
+    private List<String> getSqlScriptNotDDL(List<String> everyLineInFile) {
         List<String> result = new ArrayList<>();
-        String tmpLine = "";
+
+        StringBuilder tmpLine = new StringBuilder();
+        boolean isInString = false; // 用來標記是否處於字符串中
+
         for (String thisLine : everyLineInFile) {
-            if (thisLine.contains(";")) {
-                tmpLine += thisLine.substring(0, thisLine.indexOf(";"));
-                result.add(tmpLine);
-                tmpLine = "";
-            } else {
-                tmpLine += thisLine;
+            for (char ch : thisLine.toCharArray()) {
+                if (ch == '\'') { // 切換 isInString 狀態
+                    isInString = !isInString;
+                }
+                if (ch == ';' && !isInString) { // 只有當不在字符串中遇到分號時，才考慮結束語句
+                    result.add(tmpLine.toString());
+                    tmpLine = new StringBuilder();
+                    continue;
+                }
+                tmpLine.append(ch);
             }
         }
-        if (tmpLine != null && !tmpLine.isEmpty()) {
-            result.add(tmpLine);
+
+        if (tmpLine.length() > 0) {
+            result.add(tmpLine.toString());
         }
         return result;
     }
