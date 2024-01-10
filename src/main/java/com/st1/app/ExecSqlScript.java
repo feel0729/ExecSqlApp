@@ -142,7 +142,7 @@ public class ExecSqlScript implements Runnable {
                     logger.error("error sql = " + sql);
                     isOK = false;
                 }
-                if (cnt % 100 == 0 || cnt == sqlList.size()) {
+                if (cnt % 500 == 0 || cnt == sqlList.size()) {
                     logger.info("cnt = {}", cnt);
                     try {
                         doCommit(tmpConnection);
