@@ -98,6 +98,9 @@ public class ExecSqlApp {
     }
     private void init() {
         logger.trace("ExecSqlApp init ...");
+        logger.info("JVM version: {}", System.getProperty("java.version"));
+        logger.info("JVM installation directory: {}", System.getProperty("java.home"));
+        logger.info("JVM command-line arguments: {}", System.getProperty("sun.java.command"));
         allFiles = new HashMap<>();
         dir = "";
         properties = PropertyUtil.getProperties();

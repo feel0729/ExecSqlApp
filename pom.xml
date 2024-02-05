@@ -104,6 +104,7 @@
                             </classPath>
                             <jre>
                                 <path>../jdk-17.0.9</path>
+                                <minVersion>9</minVersion>
                                 <initialHeapSize>512</initialHeapSize>
                                 <maxHeapSize>2048</maxHeapSize>
                                 <opts>
