@@ -7,6 +7,8 @@ execute sql script file to multiple environments.
 
 GUI工具包 : Swing
 
+開發及建置使用的Java版本:jdk-17.0.9
+
 執行sql的方法:  
 java.sql.Statement.executeLargeUpdate(String sql);
 
@@ -24,6 +26,3 @@ log4j-core-2.17.0.jar
 
 缺點: 
 目前很粗略的判斷檔案內有PROCEDURE或是FUNCTION的字串，就整個檔一次執行，否則，每遇到一次分號(;)，就切為一個sql語句並執行。
-
-未來有空想再增加的功能:  
-對於Update、insert之類，會影響到資料的語法做阻擋，但目前應用的專案尚不需要。
